@@ -27,8 +27,24 @@ ENV TORCH_CUDA_ARCH_LIST="Ampere;Turing;Pascal"
 ENV FORCE_CUDA="1"
 ENV CACHEBUST="1"
 RUN conda install python=3.8 pytorch::pytorch=1.8.1 cudatoolkit=11.1 cudatoolkit-dev=11.1 torchvision -c pytorch -c nvidia -c conda-forge
+
+# Clone the repo in order to install dependencies and compile the custom CUDA ops;
+# The actual codebase itself is going to be mounted as a volume by the host under /project.
 RUN git clone https://github.com/kylevedder/mvits_for_class_agnostic_od.git /mvits
 WORKDIR /mvits
 RUN pip install -r requirements.txt
 WORKDIR /mvits/models/ops
 RUN ./make.sh
+
+# Download precomputed weights for the model
+RUN pip install gdown
+WORKDIR /weights
+RUN gdown https://drive.google.com/uc?id=1eYMmOLx3wNX4u5vGOWgVTwr0vLH1MyIr
+
+# Download precomputed resnet weights used by the model in torchhub.
+RUN mkdir -p /root/.cache/torch/hub/checkpoints/
+RUN wget https://download.pytorch.org/models/resnet101-5d3b4d8f.pth -O /root/.cache/torch/hub/checkpoints/resnet101-5d3b4d8f.pth
+
+WORKDIR /project
+ENV PYTHONPATH="./:$PYTHONPATH"
+RUN echo "python inference/main_mvit_multi_query.py -m mdef_detr -i /Datasets/coco/val2017 -c /weights/MDef_DETR_r101_epoch20.pth -tq_list '[all objects,all entities,all visible entities and objects,all obscure entities and objects]'" >> ~/.bash_history
