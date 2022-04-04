@@ -52,3 +52,5 @@ WORKDIR /project
 ENV PYTHONPATH="./:$PYTHONPATH"
 RUN echo "python inference/main_mvit_multi_query.py -m mdef_detr -i /Datasets/coco/val2017 -c /weights/MDef_DETR_r101_epoch20.pth -tq_list '[all objects,all entities,all visible entities and objects,all obscure entities and objects]'" >> ~/.bash_history
 RUN echo "python scripts/visualize_detections.py -i /Datasets/coco/val2017 -d /Datasets/coco/mdef_detr/all_objects.pkl " >> ~/.bash_history
+RUN echo "python inference/main_mvit_multi_query.py -m mdef_detr -i /scratch/kvedder/robot_bag_images/individual_images/ -c /weights/MDef_DETR_r101_epoch20.pth -tq_list '[all objects,all entities,all visible entities and objects,all obscure entities and objects]'" >> ~/.bash_history
+RUN echo "python scripts/visualize_detections.py -i /scratch/kvedder/robot_bag_images/individual_images -d /scratch/kvedder/robot_bag_images/mdef_detr/all_entities.pkl" >> ~/.bash_history
