@@ -3,6 +3,7 @@ import argparse
 from tqdm import tqdm
 from models.model import Model
 from inference.save_predictions import SavePKLFormat
+from pathlib import Path
 
 
 def parse_arguments():
@@ -27,21 +28,22 @@ def parse_arguments():
     return args
 
 
-def run_inference(model, images_dir, output_path, caption=None, multi_crop=False):
-    images = os.listdir(images_dir)
+def run_inference(model, images_dir, output_path, caption=None, multi_crop=False):    
+    images_dir = Path(images_dir)
+    images = list(images_dir.iterdir())
     dumper = SavePKLFormat()
     detections = {}
-    for i, image_name in enumerate(tqdm(images)):
+    for i, image_path in enumerate(tqdm(images)):
         if i > 0 and i % 500 == 0:  # Checkpoints after every 500 iterations
             dumper.update(detections)
             dumper.save(output_path)
             detections = {}
-        image_path = f"{images_dir}/{image_name}"
+        image_stem = image_path.stem
         # Note: Caption is only rquired for MViTs
         if multi_crop:
-            detections[image_name.split('.')[0]] = model.infer_image_multi_crop(image_path, caption=caption)
+            detections[image_stem] = model.infer_image_multi_crop(image_path, caption=caption)
         else:
-            detections[image_name.split('.')[0]] = model.infer_image(image_path, caption=caption)
+            detections[image_stem] = model.infer_image(image_path, caption=caption)
     dumper.update(detections)
     dumper.save(output_path)
 

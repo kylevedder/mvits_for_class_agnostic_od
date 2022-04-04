@@ -45,6 +45,10 @@ RUN gdown https://drive.google.com/uc?id=1eYMmOLx3wNX4u5vGOWgVTwr0vLH1MyIr
 RUN mkdir -p /root/.cache/torch/hub/checkpoints/
 RUN wget https://download.pytorch.org/models/resnet101-5d3b4d8f.pth -O /root/.cache/torch/hub/checkpoints/resnet101-5d3b4d8f.pth
 
+RUN apt install -y qt5-default
+RUN conda install -y matplotlib
+
 WORKDIR /project
 ENV PYTHONPATH="./:$PYTHONPATH"
 RUN echo "python inference/main_mvit_multi_query.py -m mdef_detr -i /Datasets/coco/val2017 -c /weights/MDef_DETR_r101_epoch20.pth -tq_list '[all objects,all entities,all visible entities and objects,all obscure entities and objects]'" >> ~/.bash_history
+RUN echo "python scripts/visualize_detections.py -i /Datasets/coco/val2017 -d /Datasets/coco/mdef_detr/all_objects.pkl " >> ~/.bash_history
